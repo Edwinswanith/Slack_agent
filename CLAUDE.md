@@ -4,9 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project State
 
-Greenfield hackathon project for the **Slack Agent Builder Challenge, track "Slack Agent for Good."** The build spec is [PRD.md](PRD.md) — **GrantProof**, a Slack-native evidence ledger for nonprofit grant reporting. No code exists yet; there are no build/test commands until Phase 0 scaffolds the app.
-
-`PRD_ DealPulse CRM Rot Detector.docx` is the abandoned pre-pivot spec (July 5, 2026 pivot). Ignore it entirely.
+Greenfield hackathon project for the **Slack Agent Builder Challenge, track "Slack Agent for Good."** The build spec is [PRD.md](PRD.md) — **GrantProof**, a Slack-native evidence ledger for nonprofit grant reporting. No code exists yet; there are no build/test commands until Phase 0 scaffolds the app. (The repo previously hosted a different spec, "DealPulse"; that project was abandoned in a July 5, 2026 pivot — GrantProof is the only project here.)
 
 **Change control (PRD §0):** PRD.md is frozen until Phase 5 is complete. Editing it earlier requires a written failure report proving the spec wrong in practice. Improvement ideas go into `LATER.md`, never into the spec and never into the codebase. Each build phase ends with a mandatory exit artifact (screenshot or failure report); do not start phase N+1 without it.
 
