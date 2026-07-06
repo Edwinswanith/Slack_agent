@@ -1,0 +1,85 @@
+{
+  "display_information": {
+    "name": "GrantProof",
+    "description": "Finds the proof of your nonprofit's work across Slack, Sheets, and Drive, and drafts cited funder reports.",
+    "background_color": "#FFFFFF",
+    "long_description": "GrantProof scans your Slack workspace for evidence of program outcomes, impact metrics, and beneficiary stories. It cross-references Google Sheets and Drive documents, extracts citations, and drafts funder-ready impact reports with full source attribution."
+  },
+  "features": {
+    "slash_commands": [
+      {
+        "command": "/grantproof",
+        "description": "Prepare a funder report from Slack evidence",
+        "usage_hint": "scan bright-futures",
+        "should_escape": false
+      }
+    ],
+    "bot_user": {
+      "display_name": "GrantProof",
+      "always_online": true
+    },
+    "app_home": {
+      "home_tab_enabled": false,
+      "messages_tab_enabled": true,
+      "messages_tab_read_only_enabled": false
+    },
+    "agent_view": {
+      "agent_description": "GrantProof evidence assistant: finds proof of your nonprofit's impact across Slack, Sheets, and Drive.",
+      "actions": [
+        {
+          "name": "scan_slack",
+          "description": "Scan Slack conversations for impact evidence related to a specific funder or program"
+        },
+        {
+          "name": "cross_reference_sheets",
+          "description": "Look up supporting data in connected Google Sheets (metrics, outcomes, participant counts)"
+        },
+        {
+          "name": "draft_report_section",
+          "description": "Draft a funder report section with evidence citations"
+        }
+      ],
+      "suggested_prompts": [
+        {
+          "title": "Prepare the Bright Futures July report",
+          "message": "Prepare the Bright Futures July report"
+        },
+        {
+          "title": "What impact evidence do we have for Teen Leadership?",
+          "message": "What impact evidence do we have for Teen Leadership?"
+        }
+      ]
+    }
+  },
+  "oauth_config": {
+    "scopes": {
+      "bot": [
+        "assistant:write",
+        "chat:write",
+        "commands",
+        "im:history",
+        "im:write",
+        "channels:history",
+        "channels:read",
+        "users:read"
+      ]
+    },
+    "redirect_urls": []
+  },
+  "settings": {
+    "event_subscriptions": {
+      "bot_events": [
+        "assistant_thread_started",
+        "assistant_thread_context_changed",
+        "message.im",
+        "app_home_opened"
+      ]
+    },
+    "interactivity": {
+      "is_enabled": true
+    },
+    "socket_mode_enabled": true,
+    "org_deploy_enabled": false,
+    "token_rotation_enabled": false
+  }
+}

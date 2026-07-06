@@ -60,7 +60,7 @@ Full DDL in PRD §8. Tables: `grants`, `requirements`, `evidence`, `conflicts`, 
 
 - Acknowledge every command and button within 3 seconds; use `assistant.threads.setStatus` to stream progress while working.
 - Bot scopes: `assistant:write`, `chat:write`, `commands`, `im:history`, `im:write`, `channels:history`, `channels:read`, `users:read` (add `groups:*` only if the demo uses a private channel — default is public channels).
-- Events: `assistant_thread_started`, `assistant_thread_context_changed`, `message.im`. Interactivity enabled; Agent/Assistant toggle enabled in app settings.
+- Events: `assistant_thread_started`, `assistant_thread_context_changed`, `message.im`, plus `app_home_opened` (added post-PRD — see EVALS.md FR-002: Slack's June 2026 `agent_view` migration means `assistant_thread_started` may not reliably signal "user opened a DM" anymore, so the app listens for both). Interactivity enabled; manifest uses `features.agent_view` (mandatory for new apps as of June 2026 — `assistant_view` is legacy/deprecating).
 - All UX copy is specified verbatim in PRD §13 (welcome, ledger summary, confirmation/conflict/unit-suspicion/redaction cards, gap summary, and every §13.8 error state). Use those exact strings; all error states must exist before submission.
 
 ## Build Order (PRD §16 — sequential, exit artifacts mandatory)

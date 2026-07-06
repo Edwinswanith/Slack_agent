@@ -89,3 +89,23 @@ The PRD is silent on these. They are implementation rules, not scope changes —
 **Resolution (GR-1):** exact integer equality replaces the 5% band. This also makes B1's determinism requirement trivial to satisfy.
 
 **Status:** EVALS.md and CLAUDE.md follow GR-1. The one-line patch to §9.4's pseudocode (`within 5% of` → `exactly equals`) awaits spec-owner approval; until then, GR-1 supersedes the pseudocode.
+
+---
+
+## FR-002 — Failure report: PRD §7.3's Slack event model superseded by a platform change
+
+**Filed:** July 6, 2026, during Phase 0 (per §0 change control, a written failure report is required to amend the frozen PRD).
+
+**Defect:** PRD §7.3 requires subscribing to `assistant_thread_started`, `assistant_thread_context_changed`, and `message.im`, and §7.2 calls for "Slack AI assistant pane first." These were accurate when the PRD was written, but Slack's June 30, 2026 changelog ("Introducing the Agent messaging experience") states **new apps can only use the `agent_view` manifest feature** — the `assistant_view` feature the PRD implicitly assumes is legacy-only and being deprecated, and switching to `agent_view` is not reversible. Under `agent_view`, Slack's own docs state `assistant_thread_started` "no longer indicates when a user has actively opened a DM with your app"; the recommended replacement signal is `app_home_opened` with `event.tab === 'messages'`.
+
+Countervailing evidence: the installed `@slack/bolt@4.7.3` package (verified by reading `node_modules/@slack/bolt/dist/Assistant.d.ts` directly) still ships a complete `Assistant` class built on exactly the three events PRD §7.3 names, with no deprecation marker. So the SDK-level contract is intact; only the platform-level "does this reliably fire when a user opens a DM" guarantee is in question for new `agent_view` apps, and this cannot be confirmed without a live sandbox test.
+
+**Resolution (GR-6):** the manifest uses `features.agent_view` (mandatory — there is no `assistant_view` option for a new app) and subscribes to all four events: the original three plus `app_home_opened`. The code registers both the `Assistant` class (threadStarted/userMessage, matching PRD §7.3 verbatim) and a defensive `app_home_opened` handler that posts the same PRD §13.1 welcome text. Whichever signal Slack actually fires in practice, the user sees the welcome message — the PRD's product intent (assistant-pane-first entry) is preserved even though the underlying event plumbing had to be hedged.
+
+**Status:** implemented in `src/slack/assistant.ts` per GR-6. Requires human verification against a live Slack sandbox (Phase 0 exit artifact) to confirm which handler actually fires — remove the redundant one once confirmed, to keep the Phase 2+ pipeline simple. PRD §7.3 is not proposed for editing (the underlying intent — assistant pane, these events — is still correct guidance for most of the interaction; only the "opened a DM" detection signal has drifted), but future phases should treat `app_home_opened` as the authoritative "conversation started" signal if the sandbox test shows `assistant_thread_started` doesn't fire reliably.
+
+---
+
+## Adopted gap rules (continued)
+
+- **GR-6 (Slack event model — see FR-002):** subscribe to `assistant_thread_started`, `assistant_thread_context_changed`, `message.im`, and `app_home_opened`. Register both the Bolt `Assistant` class (for the first three) and a plain `app_home_opened` handler (tab === 'messages') that posts the identical PRD §13.1 welcome text, until a live sandbox test confirms which one Slack actually fires for a new `agent_view` app.

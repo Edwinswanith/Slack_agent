@@ -1,0 +1,26 @@
+{
+  "name": "grantproof",
+  "version": "0.0.1",
+  "description": "GrantProof - Slack-native evidence ledger for nonprofit grant reporting",
+  "type": "module",
+  "private": true,
+  "main": "dist/slack/app.js",
+  "scripts": {
+    "dev": "tsx watch src/slack/app.ts",
+    "build": "tsc",
+    "start": "node dist/slack/app.js",
+    "test": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "eval": "node scripts/eval-stub.mjs"
+  },
+  "dependencies": {
+    "@slack/bolt": "^4.7.3",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "typescript": "^6.0.3",
+    "tsx": "^4.23.0",
+    "vitest": "^4.1.9"
+  }
+}
