@@ -174,7 +174,7 @@ Return a JSON array of evidence items, wrapped in an object with an "items" fiel
         typeof obj.source_ref !== 'string' ||
         typeof obj.unit_ambiguous !== 'boolean' ||
         typeof obj.pii_detected !== 'boolean' ||
-        typeof obj.note !== 'string'
+        (typeof obj.note !== 'string' && obj.note !== null)
       ) {
         throw new ExtractionError(
           `Item at index ${index} has invalid schema: ${JSON.stringify(obj)}`
@@ -193,7 +193,7 @@ Return a JSON array of evidence items, wrapped in an object with an "items" fiel
         confidence,
         unit_ambiguous: obj.unit_ambiguous,
         pii_detected: obj.pii_detected,
-        note: obj.note
+        note: obj.note ?? ''
       };
     });
 
