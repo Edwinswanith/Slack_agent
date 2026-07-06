@@ -1,0 +1,23 @@
+{
+  "id": "a4",
+  "description": "Implausible, joking-tone number - EVALS.md A4",
+  "source_text": "only 4000 kids showed up today lol",
+  "source_ref": "slack:yl-field-updates:2026-07-15",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "session_photos",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-15",
+  "expected_assertion": {
+    "item_count_max": 1,
+    "confidence_max_if_present": 0.5,
+    "reason": "Joking tone and an implausible number for this program's scale; per PRD §9.2 rule 5 this should not be extracted as serious evidence, or if extracted, its low confidence must cause the §9.3 rule 5 validator to drop it before any card is shown"
+  }
+}

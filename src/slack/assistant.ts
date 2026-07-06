@@ -24,6 +24,7 @@ import {
 } from '../db/evidence.js';
 import { createConflict, getConflictById, resolveConflict, skipConflict } from '../db/conflicts.js';
 import { buildConfirmationCardBlocks } from '../core/confirmationCard.js';
+import { buildUnitAmbiguityCardBlocks } from '../core/unitAmbiguityCard.js';
 import { buildRedactionCardBlocks } from '../core/redactionCard.js';
 import { buildConflictCardBlocks } from '../core/conflictCard.js';
 import { buildUnitSuspicionCardBlocks } from '../core/unitSuspicionCard.js';
@@ -62,6 +63,15 @@ const GENERIC_FAILURE_TEXT =
 const UNKNOWN_GRANT_TEXT =
   'I only know one grant right now: Bright Futures Youth Literacy. Try: Prepare the Bright Futures July report.';
 
+// PRD §13.8, verbatim — "No evidence found."
+const NO_EVIDENCE_FOUND_TEXT =
+  'I searched #yl-field-updates and #yl-finance for July and found no qualifying evidence for that requirement. I do not invent evidence.';
+
+// Requirement types this project sources from Slack channel search (story/finance/narrative).
+// count/series are Sheet-sourced and artifact is Drive-sourced — each already has its own
+// honest "missing" ledger line, so the §13.8 "no evidence found" message only applies here.
+const SLACK_SOURCED_REQUIREMENT_TYPES = new Set(['story', 'finance', 'narrative']);
+
 /**
  * Resolve the grant intent from user input.
  * Returns one of: "bright_futures" | "unknown_grant" | "not_a_grant_request"
@@ -72,7 +82,7 @@ const UNKNOWN_GRANT_TEXT =
  *
  * EVALS.md F1 compliance: "/grantproof scan acme" → "unknown_grant"
  */
-function resolveGrantIntent(text: string): 'bright_futures' | 'unknown_grant' | 'not_a_grant_request' {
+export function resolveGrantIntent(text: string): 'bright_futures' | 'unknown_grant' | 'not_a_grant_request' {
   const normalized = text.trim().toLowerCase();
 
   // Exact match
@@ -369,6 +379,33 @@ async function runEvidencePipeline(
       // just now" — a row from an earlier scan that GR-2 skips re-inserting
       // this time must still get masked, not stay stuck at 'detected' forever).
       if (piiDetected) {
+        continue;
+      }
+
+      // GR-4: an ambiguous-unit item must never render as a plain
+      // confirmation card, and is never auto-proposed as the target field's
+      // value — it gets its own review card requiring an explicit human
+      // acknowledgment of the ambiguity (reusing the same confirm/edit/reject
+      // actions, since the underlying state machine is unchanged).
+      if (item.unit_ambiguous) {
+        logger.info('Posting unit ambiguity review card (GR-4)', {
+          evidenceId,
+          requirement_key: item.requirement_key,
+        });
+
+        const blocks = buildUnitAmbiguityCardBlocks(req.label, {
+          id: evidenceId,
+          claim_text: item.claim_text,
+          quote_text: item.quote_text,
+          source_ref: item.source_ref,
+          confidence: item.confidence,
+          note: item.note,
+        });
+
+        await say({
+          text: `Unit ambiguity flagged for ${req.label}`,
+          blocks: blocks as KnownBlock[],
+        });
         continue;
       }
 
@@ -825,6 +862,16 @@ async function postRealLedgerSummary(
             .all(...requirementIds) as Array<{ requirement_id: string; kind: string; status: string }>);
 
     const report = computeGapReport(requirements, evidenceRows, openConflicts);
+
+    // PRD §13.8 "No evidence found" — one message per Slack-sourced requirement
+    // (story/finance/narrative) that has zero evidence at all.
+    const requirementTypeByKey = new Map(requirements.map((r) => [r.key, r.type]));
+    for (const reqInfo of report.requirements) {
+      const type = requirementTypeByKey.get(reqInfo.requirementKey);
+      if (reqInfo.status === 'missing' && type && SLACK_SOURCED_REQUIREMENT_TYPES.has(type)) {
+        await say(NO_EVIDENCE_FOUND_TEXT);
+      }
+    }
 
     const lines = [
       `*${grant.name}.* Report due ${grant.report_due}. *Coverage: ${report.confirmedCount} of ${report.totalRequired} requirements.*`,

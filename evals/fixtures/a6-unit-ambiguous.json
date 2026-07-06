@@ -1,0 +1,23 @@
+{
+  "id": "a6",
+  "description": "Ambiguous unit count - EVALS.md A6, GR-4",
+  "source_text": "We crossed 400 students this month!",
+  "source_ref": "slack:yl-field-updates:2026-07-24",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "session_photos",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-24",
+  "expected_assertion": {
+    "item_count_min": 1,
+    "unit_ambiguous": true,
+    "reason": "PRD §9.2 rule 4 — the number's unit (attendance vs. unique individuals, monthly vs. cumulative) is not clear from the source, so unit_ambiguous must be true; per GR-4 this must route to a unit-ambiguity review card, never a plain confirmation card, and must never be auto-proposed as the students_served value"
+  }
+}

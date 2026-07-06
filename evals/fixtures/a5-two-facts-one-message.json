@@ -1,0 +1,25 @@
+{
+  "id": "a5",
+  "description": "One message containing an attendance number AND a risk - EVALS.md A5",
+  "source_text": "Workshop 5 had 52 students today, though attendance has been dropping because the afternoon session now conflicts with school exam hours.",
+  "source_ref": "slack:yl-field-updates:2026-07-16",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "session_photos",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-16",
+  "expected_assertion": {
+    "item_count_min": 2,
+    "distinct_quote_spans": true,
+    "expected_requirement_keys": ["program_challenges"],
+    "expected_any_of_requirement_keys": ["attendance_by_session", "students_served"],
+    "reason": "The attendance fact and the scheduling-conflict fact are each their own claim with their own quote span per PRD §9.2 schema; the drafter's per-fact citation rule (§12) depends on facts never being merged into one item. Item count is a floor, not an exact match — the model may legitimately map the same attendance number to more than one requirement key across runs (LLM non-determinism), which does not violate the one-fact-per-sentence rule."
+  }
+}

@@ -104,6 +104,48 @@ describe("Gap Detector (PRD §11)", () => {
     });
   });
 
+  describe("PRD §13.8 dependency: Slack-sourced types classify as missing with zero evidence", () => {
+    // The assistant's "No evidence found" error state (§13.8) fires for any
+    // story/finance/narrative requirement with status === "missing" — locking
+    // this in here means a future change to computeGapReport can't silently
+    // break that trigger.
+    const slackSourcedRequirements = [
+      {
+        id: "req_story",
+        key: "beneficiary_story",
+        label: "Beneficiary Story",
+        type: "story",
+        required: 1,
+        params_json: null,
+      },
+      {
+        id: "req_finance",
+        key: "budget_variance",
+        label: "Budget Variance Explanation",
+        type: "finance",
+        required: 1,
+        params_json: null,
+      },
+      {
+        id: "req_narrative",
+        key: "program_challenges",
+        label: "Challenges Encountered and Solutions",
+        type: "narrative",
+        required: 1,
+        params_json: null,
+      },
+    ];
+
+    it("classifies story, finance, and narrative requirements as missing when no evidence exists", () => {
+      const report = computeGapReport(slackSourcedRequirements, [], []);
+
+      for (const key of ["beneficiary_story", "budget_variance", "program_challenges"]) {
+        const info = report.requirements.find((r) => r.requirementKey === key);
+        expect(info?.status).toBe("missing");
+      }
+    });
+  });
+
   describe("Coverage metrics", () => {
     it("should count confirmed requirements correctly", () => {
       const evidence = [

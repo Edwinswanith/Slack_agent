@@ -1,6 +1,5 @@
 import { google } from "googleapis";
-import fs from "fs";
-import path from "path";
+import { getGoogleAuth } from "./auth.js";
 
 export class DriveAccessError extends Error {
   constructor(message: string, public readonly statusCode?: number) {
@@ -20,27 +19,8 @@ export async function getDriveClient() {
     return cachedClient;
   }
 
-  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (!credPath) {
-    throw new DriveAccessError(
-      "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set. " +
-        "Set it to the path of your service account JSON key file."
-    );
-  }
-
-  const resolvedPath = path.resolve(credPath);
-  if (!fs.existsSync(resolvedPath)) {
-    throw new DriveAccessError(
-      `Service account credentials file not found at ${resolvedPath}. ` +
-        "Ensure GOOGLE_APPLICATION_CREDENTIALS points to a valid file."
-    );
-  }
-
   try {
-    const auth = new google.auth.GoogleAuth({
-      keyFile: resolvedPath,
-      scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-    });
+    const auth = getGoogleAuth(["https://www.googleapis.com/auth/drive.readonly"]);
 
     cachedClient = google.drive({
       version: "v3",

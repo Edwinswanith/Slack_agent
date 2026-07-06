@@ -1,0 +1,22 @@
+{
+  "id": "a3",
+  "description": "Future-tense expected count, out-of-period - EVALS.md A3",
+  "source_text": "Planning workshop 9 on Aug 3, expecting 60 students.",
+  "source_ref": "slack:yl-field-updates:2026-07-29",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "session_photos",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-29",
+  "expected_assertion": {
+    "item_count": 0,
+    "reason": "Future-tense/expected count is not evidence per PRD §9.2 rule 5; the referenced date (Aug 3) also falls outside the July reporting period per §9.3.4"
+  }
+}

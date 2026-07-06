@@ -1,6 +1,5 @@
 import { google } from "googleapis";
-import fs from "fs";
-import path from "path";
+import { getGoogleAuth } from "./auth.js";
 
 /**
  * Custom error for sheet access failures.
@@ -29,13 +28,10 @@ export function __resetCachedClient() {
 /**
  * Initializes and returns the authenticated Google Sheets API v4 client.
  *
- * Authenticates using a service account JSON key file via GOOGLE_APPLICATION_CREDENTIALS
- * environment variable. Requests read-only scope only (https://www.googleapis.com/auth/spreadsheets.readonly).
- *
- * Fails fast if:
- * - GOOGLE_APPLICATION_CREDENTIALS is unset
- * - The credential file does not exist
- * - Authentication fails
+ * Authenticates via GOOGLE_CREDENTIALS_JSON (in-memory, for hosts like
+ * Railway) or GOOGLE_APPLICATION_CREDENTIALS (a file path, for local dev) —
+ * see src/google/auth.ts. Requests read-only scope only
+ * (https://www.googleapis.com/auth/spreadsheets.readonly).
  *
  * @returns The authenticated sheets API client
  * @throws {SheetAccessError} If credentials are missing or invalid
@@ -46,29 +42,8 @@ export async function getSheetsClient() {
     return cachedClient;
   }
 
-  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (!credPath) {
-    throw new SheetAccessError(
-      "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set. " +
-        "Set it to the path of your service account JSON key file."
-    );
-  }
-
-  // Resolve to absolute path for clarity in error messages
-  const resolvedPath = path.resolve(credPath);
-  if (!fs.existsSync(resolvedPath)) {
-    throw new SheetAccessError(
-      `Service account credentials file not found at ${resolvedPath}. ` +
-        "Ensure GOOGLE_APPLICATION_CREDENTIALS points to a valid file."
-    );
-  }
-
   try {
-    // Initialize GoogleAuth with the service account key file
-    const auth = new google.auth.GoogleAuth({
-      keyFile: resolvedPath,
-      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-    });
+    const auth = getGoogleAuth(["https://www.googleapis.com/auth/spreadsheets.readonly"]);
 
     // Create the sheets API client
     cachedClient = google.sheets({
