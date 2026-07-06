@@ -43,7 +43,10 @@
         "im:write",
         "channels:history",
         "channels:read",
-        "users:read"
+        "users:read",
+        "search:read.public",
+        "search:read.files",
+        "search:read.users"
       ]
     },
     "pkce_enabled": true

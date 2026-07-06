@@ -1,0 +1,21 @@
+{
+  "id": "c3",
+  "description": "Quasi-identifier without explicit name - EVALS.md C3, PRD §10",
+  "source_text": "the tallest girl at the Kolathur centre, her father drives an auto",
+  "source_ref": "slack:yl-field-updates:2026-07-20",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "photos_from_sessions",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-20",
+  "expected_assertion": {
+    "pii_detected_by_llm_or_regex": true
+  }
+}

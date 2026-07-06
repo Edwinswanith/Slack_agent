@@ -1,0 +1,26 @@
+{
+  "id": "a1",
+  "description": "Kolathur transport message - PRD §14.4 message 2",
+  "source_text": "Transport cost ran 18% over budget this month because two sessions moved to the Kolathur site.",
+  "source_ref": "slack:yl-finance:2026-07-18",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "photos_from_sessions",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-18",
+  "expected_assertion": {
+    "item_count": 1,
+    "requirement_key": "budget_variance",
+    "quote_text_must_match": "Transport cost ran 18% over budget this month because two sessions moved to the Kolathur site.",
+    "confidence_min": 0.8,
+    "unit_ambiguous": false,
+    "pii_detected": false
+  }
+}

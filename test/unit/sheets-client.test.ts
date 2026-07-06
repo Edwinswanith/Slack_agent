@@ -222,6 +222,66 @@ describe("Sheets Client", () => {
       );
     });
 
+    it("EVALS.md C4 — a planted roster name never appears anywhere in the returned snapshot", async () => {
+      const sessionsData = [
+        ["Week", "Count"],
+        ["W1", 51],
+        ["W2", 55],
+        ["W3", 49],
+        ["W4", 58],
+        ["W5", 52],
+        ["W6", 57],
+        ["W7", 61],
+        ["W8", 49],
+        ["Total Workshops", 8],
+      ];
+
+      // Roster tab with individual child names planted alongside the aggregate count,
+      // mirroring PRD §14.2's real sheet structure.
+      const plantedName = "Meena Priyadarshini";
+      const rosterData = [
+        ["Student ID", "Name", "Sessions"],
+        ["S001", plantedName, 3],
+        ["S002", "Kavya Elangovan", 5],
+        ["Unique students enrolled", 61, ""],
+      ];
+
+      const summaryData = [["Students served (July)", 432]];
+
+      const mockSheetsClient = google.sheets as any;
+
+      const mockInstance = {
+        spreadsheets: {
+          values: {
+            get: vi.fn().mockImplementation(async ({ range }) => {
+              if (range.includes("Sessions")) {
+                return { data: { values: sessionsData } };
+              }
+              if (range.includes("Roster")) {
+                return { data: { values: rosterData } };
+              }
+              if (range.includes("Summary")) {
+                return { data: { values: summaryData } };
+              }
+              return { data: { values: [] } };
+            }),
+          },
+        },
+      };
+      mockSheetsClient.mockReturnValue(mockInstance);
+
+      const result = await readAttendanceTrackerSnapshot("test-sheet-id");
+
+      // The aggregate count must still come through correctly...
+      expect(result.uniqueStudents).toBe(61);
+      // ...but no individual roster name may leak into any field of the snapshot
+      // (PRD §9.1/§10, EVALS.md C4: "agent cites the count cell only").
+      const serialized = JSON.stringify(result);
+      expect(serialized).not.toContain(plantedName);
+      expect(serialized).not.toContain("Meena");
+      expect(serialized).not.toContain("Kavya Elangovan");
+    });
+
     it("should throw SheetAccessError when Summary 'Students served' value is missing", async () => {
       const sessionsData = [
         ["Week", "Count"],

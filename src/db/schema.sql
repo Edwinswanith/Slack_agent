@@ -32,7 +32,9 @@ CREATE TABLE IF NOT EXISTS evidence (
   status TEXT NOT NULL DEFAULT 'proposed',
   extracted_at TEXT NOT NULL,
   confirmed_by TEXT,
-  confirmed_at TEXT
+  confirmed_at TEXT,
+  masked_claim_text TEXT,
+  masked_quote_text TEXT
 );
 
 CREATE TABLE IF NOT EXISTS conflicts (
@@ -67,3 +69,6 @@ CREATE TABLE IF NOT EXISTS audit (
   details_json TEXT,
   at TEXT NOT NULL
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS evidence_requirement_source_dedup
+  ON evidence(requirement_id, source_ref);

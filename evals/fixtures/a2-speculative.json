@@ -1,0 +1,22 @@
+{
+  "id": "a2",
+  "description": "Speculative future-tense statement - PRD §14.4 message 5, EVALS A2",
+  "source_text": "We might expand to a third centre next quarter if funding comes through.",
+  "source_ref": "slack:yl-field-updates:2026-07-26",
+  "requirement_keys": [
+    "workshops_completed",
+    "students_served",
+    "attendance_by_session",
+    "beneficiary_story",
+    "photos_from_sessions",
+    "budget_variance",
+    "program_challenges"
+  ],
+  "reporting_period_start": "2026-07-01",
+  "reporting_period_end": "2026-07-31",
+  "source_date": "2026-07-26",
+  "expected_assertion": {
+    "item_count": 0,
+    "reason": "Speculative future-tense statement per PRD §9.2 rule 5; not evidence"
+  }
+}

@@ -1,0 +1,126 @@
+import { describe, it, expect } from "vitest";
+import {
+  computeGapReport,
+} from "../../src/core/gapDetector.js";
+
+describe("Gap Detector (PRD §11)", () => {
+  const mockRequirements = [
+    {
+      id: "req_1",
+      key: "program_challenges",
+      label: "Challenges Encountered and Solutions",
+      type: "narrative",
+      required: 1,
+      params_json: null,
+    },
+    {
+      id: "req_2",
+      key: "attendance_by_session",
+      label: "Attendance by Session",
+      type: "series",
+      required: 1,
+      params_json: null,
+    },
+    {
+      id: "req_3",
+      key: "session_photos",
+      label: "Session Photos",
+      type: "artifact",
+      required: 1,
+      params_json: null,
+    },
+  ];
+
+  describe("Status precedence rules", () => {
+    it("should set status=conflict for open value_mismatch conflict", () => {
+      const evidence = [
+        {
+          id: "e1",
+          requirement_id: "req_1",
+          source_type: "slack",
+          status: "confirmed",
+          pii_state: "none",
+          value_json: null,
+        },
+      ];
+
+      const conflicts = [
+        {
+          requirement_id: "req_1",
+          kind: "value_mismatch",
+          status: "open",
+        },
+      ];
+
+      const report = computeGapReport(
+        mockRequirements,
+        evidence as any,
+        conflicts as any
+      );
+
+      const programChallenges = report.requirements.find(
+        (r) => r.requirementKey === "program_challenges"
+      );
+      expect(programChallenges?.status).toBe("conflict");
+      expect(programChallenges?.ledgerDisplayText).toBe("conflict found");
+    });
+
+    it("should set status=confirmed and format artifact ledger text", () => {
+      const evidence = [
+        {
+          id: "e1",
+          requirement_id: "req_3",
+          source_type: "drive",
+          status: "confirmed",
+          pii_state: "none",
+          value_json: JSON.stringify({
+            fileCount: 6,
+            distinctDateCount: 2,
+          }),
+        },
+      ];
+
+      const report = computeGapReport(mockRequirements, evidence as any, []);
+
+      const photos = report.requirements.find(
+        (r) => r.requirementKey === "session_photos"
+      );
+      expect(photos?.status).toBe("confirmed");
+      expect(photos?.ledgerDisplayText).toBe(
+        "verified, 6 files across 2 dates"
+      );
+    });
+
+    it("should set status=missing with suggestion for program_challenges", () => {
+      const report = computeGapReport(mockRequirements, [], []);
+
+      const programChallenges = report.requirements.find(
+        (r) => r.requirementKey === "program_challenges"
+      );
+      expect(programChallenges?.status).toBe("missing");
+      expect(programChallenges?.suggestion).toBe(
+        "I found no evidence in the reporting period. This is usually one paragraph from the program lead; consider asking in #yl-field-updates."
+      );
+    });
+  });
+
+  describe("Coverage metrics", () => {
+    it("should count confirmed requirements correctly", () => {
+      const evidence = [
+        {
+          id: "e1",
+          requirement_id: "req_1",
+          source_type: "slack",
+          status: "confirmed",
+          pii_state: "none",
+          value_json: null,
+        },
+      ];
+
+      const report = computeGapReport(mockRequirements, evidence as any, []);
+
+      expect(report.confirmedCount).toBe(1);
+      expect(report.totalRequired).toBe(3);
+    });
+  });
+});

@@ -142,10 +142,14 @@ export async function readRange(sheetId: string, range: string): Promise<(string
  */
 export interface AttendanceTrackerSnapshot {
   sessionCounts: number[]; // 8 per-session values from Sessions tab (W1-W8)
+  sessionCellRefs: string[]; // "Sessions!A{row}:B{row}" for each of the 8 sessions, same order as sessionCounts
   sessionSum: number; // Sum of sessionCounts
   workshopCount: number; // Total workshop count
+  workshopCountCellRef: string; // Cell ref for the workshop count row
   uniqueStudents: number; // Unique students from Roster tab
+  uniqueStudentsCellRef: string; // Cell ref for the unique-students row
   summaryStudentsServedValue: number; // Value from Summary tab labeled "Students served"
+  summaryStudentsServedCellRef: string; // Cell ref for the "Students served" row
 }
 
 /**
@@ -186,19 +190,25 @@ export async function readAttendanceTrackerSnapshot(
 
   // Extract session counts from the Sessions tab
   // Expected structure: column A = week label (W1, W2, etc.), column B = count
+  // Row index (0-based) + 1 gives the 1-based sheet row for cell references.
   const sessionCounts: number[] = [];
-  for (const row of sessionsData) {
+  const sessionCellRefs: string[] = [];
+  for (let i = 0; i < sessionsData.length; i++) {
+    const row = sessionsData[i];
+    const sheetRow = i + 1;
     if (row.length >= 2) {
       const label = String(row[0] ?? "").trim();
       const value = toNumberOrNull(row[1]);
       // Match week labels W1, W2, etc.
       if (label.match(/^W\d+$/i) && value !== null) {
         sessionCounts.push(value);
+        sessionCellRefs.push(`Sessions!B${sheetRow}`);
       } else if (value !== null && label.match(/^W\d+$/i) === null && label !== "") {
         // Handle case where label is non-week but value is numeric (fallback parsing)
         // Only if we haven't found 8 sessions yet
         if (sessionCounts.length < 8) {
           sessionCounts.push(value);
+          sessionCellRefs.push(`Sessions!B${sheetRow}`);
         }
       }
     }
@@ -215,12 +225,15 @@ export async function readAttendanceTrackerSnapshot(
 
   // Extract workshop count from Sessions tab (cell B10 in the demo, but search for it)
   let workshopCount = sessionCounts.length; // Default to number of sessions
-  for (const row of sessionsData) {
+  let workshopCountCellRef = "";
+  for (let i = 0; i < sessionsData.length; i++) {
+    const row = sessionsData[i];
     if (row.length >= 2) {
       const label = String(row[0] ?? "").toLowerCase();
       const value = toNumberOrNull(row[1]);
       if (label.includes("workshop") && value !== null) {
         workshopCount = value;
+        workshopCountCellRef = `Sessions!B${i + 1}`;
         break;
       }
     }
@@ -229,12 +242,15 @@ export async function readAttendanceTrackerSnapshot(
   // Extract unique students from Roster tab
   // Expected: a row with "Unique students enrolled" or similar, with the count in the next column
   let uniqueStudents = 0;
-  for (const row of rosterData) {
+  let uniqueStudentsCellRef = "";
+  for (let i = 0; i < rosterData.length; i++) {
+    const row = rosterData[i];
     if (row.length >= 2) {
       const label = String(row[0] ?? "").toLowerCase();
       const value = toNumberOrNull(row[1]);
       if ((label.includes("unique") || label.includes("enrolled")) && value !== null) {
         uniqueStudents = value;
+        uniqueStudentsCellRef = `Roster!B${i + 1}`;
         break;
       }
     }
@@ -250,12 +266,15 @@ export async function readAttendanceTrackerSnapshot(
   // Extract students served value from Summary tab
   // Expected: a row with "Students served" or similar, with the count in the next column
   let summaryStudentsServedValue = 0;
-  for (const row of summaryData) {
+  let summaryStudentsServedCellRef = "";
+  for (let i = 0; i < summaryData.length; i++) {
+    const row = summaryData[i];
     if (row.length >= 2) {
       const label = String(row[0] ?? "").toLowerCase();
       const value = toNumberOrNull(row[1]);
       if (label.includes("students") && label.includes("served") && value !== null) {
         summaryStudentsServedValue = value;
+        summaryStudentsServedCellRef = `Summary!B${i + 1}`;
         break;
       }
     }
@@ -270,9 +289,13 @@ export async function readAttendanceTrackerSnapshot(
 
   return {
     sessionCounts,
+    sessionCellRefs,
     sessionSum,
     workshopCount,
+    workshopCountCellRef,
     uniqueStudents,
+    uniqueStudentsCellRef,
     summaryStudentsServedValue,
+    summaryStudentsServedCellRef,
   };
 }

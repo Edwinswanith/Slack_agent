@@ -114,6 +114,12 @@ SLACK_SIGNING_SECRET=...        # Basic Information → Signing Secret
 
 ---
 
+## Phase 2 addition: search:read.* scopes for the Real-Time Search API attempt
+
+PRD §7.4 names the Real-time Search API (`assistant.search.context`) as the primary retrieval path. That method's bot-token requirement is `search:read.public`, `search:read.files`, `search:read.users` — none of which were in the original Phase 0 scope list (that list came from PRD §7.3, written before the RTS scope requirement was confirmed against current docs). Added here so the code can genuinely attempt the call rather than skip it. Per Slack's own docs, semantic search additionally requires a workspace on a Slack AI Search plan obtained through Slack's partnerships team — a hackathon dev sandbox almost certainly doesn't have this, so expect `assistant.search.info`/`assistant.search.context` to report the feature unavailable. This was supposed to be checked as a "Day-0 fork" in Phase 0 (per PLAN.md) but was missed; it's being closed out now at the start of Phase 2. PRD §7.4's fallback (`conversations.history`) is the path that actually needs to work.
+
+**After pasting this manifest update:** reinstall the app to the workspace (OAuth & Permissions → Reinstall) so the new scopes take effect — adding scopes to an already-installed app doesn't apply them until reinstall.
+
 ## Support References
 
 - [Introducing the Agent messaging experience (June 2026) | Slack Developer Docs](https://docs.slack.dev/changelog/2026/06/30/agent-messages-tab/)

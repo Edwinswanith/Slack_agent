@@ -4,7 +4,7 @@ import { AttendanceTrackerSnapshot } from "../google/sheets.js";
 /**
  * Database row types for reading from SQLite.
  */
-interface Grant {
+export interface Grant {
   id: string;
   name: string;
   funder: string;
@@ -13,7 +13,7 @@ interface Grant {
   report_due: string;
 }
 
-interface Requirement {
+export interface Requirement {
   id: string;
   grant_id: string;
   key: string;

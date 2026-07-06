@@ -34,8 +34,28 @@ export function initDb(): Database.Database {
   const schema = fs.readFileSync(schemaPath, "utf-8");
   instance.exec(schema);
 
+  runMigrations(instance);
+
   db = instance;
   return db;
+}
+
+/**
+ * Phase 3: adds masked_claim_text/masked_quote_text columns to an existing
+ * evidence table. SQLite has no "ADD COLUMN IF NOT EXISTS", so check
+ * PRAGMA table_info first — this keeps existing dev/demo data intact instead
+ * of requiring a fresh DB file.
+ */
+function runMigrations(instance: Database.Database): void {
+  const columns = instance.prepare("PRAGMA table_info(evidence)").all() as Array<{ name: string }>;
+  const columnNames = new Set(columns.map((c) => c.name));
+
+  if (!columnNames.has("masked_claim_text")) {
+    instance.exec("ALTER TABLE evidence ADD COLUMN masked_claim_text TEXT");
+  }
+  if (!columnNames.has("masked_quote_text")) {
+    instance.exec("ALTER TABLE evidence ADD COLUMN masked_quote_text TEXT");
+  }
 }
 
 export function getDb(): Database.Database {

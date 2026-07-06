@@ -11,9 +11,10 @@
     "start": "node dist/src/slack/app.js",
     "test": "vitest run test/unit",
     "test:integration": "vitest run test/integration",
-    "eval": "node scripts/eval-stub.mjs"
+    "eval": "tsx scripts/eval-phase2.ts"
   },
   "dependencies": {
+    "@google/genai": "^2.10.0",
     "@slack/bolt": "^4.7.3",
     "better-sqlite3": "^12.11.1",
     "dotenv": "^17.4.2",
