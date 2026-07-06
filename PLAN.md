@@ -6,6 +6,16 @@ Execution plan for [PRD.md](PRD.md) §16, with test gates from [EVALS.md](EVALS.
 
 ---
 
+## Decision log
+
+Deviations from PRD.md's locked stack (§7.2), made by the project owner during the build rather than discovered as spec defects (contrast with EVALS.md's FR-numbered failure reports, which document the spec being wrong — these are deliberate substitutions).
+
+**DR-001 (July 6, 2026): LLM switched from Claude to Gemini 3.5 Flash.** PRD §7.2 locks "Claude API, model `claude-sonnet-4-6`, strict JSON output." Project owner elected to use the Gemini API instead, choosing Gemini 3.5 Flash specifically (over Gemini 2.5 Pro / 3 Pro) for its free tier — relevant given the hackathon's tight budget and timeline. CLAUDE.md's Locked Stack section is updated to reflect this; PRD.md is left unedited per its freeze (§0) since this isn't a proven defect, and every place it says "Claude" should now be read as "the configured Gemini model." Scope of the change: extraction (§9.2), PII tagging (§10), and drafting (§12) — the prompt contracts, output schemas, and post-extraction validators are unaffected; only the model client swaps (`@google/generative-ai` instead of `@anthropic-ai/sdk`).
+
+**Watch item:** Flash-tier models trade reasoning depth for speed/cost versus Pro-tier. The PRD's confidence-scoring rules (§11.7) and speculative-language detection (holdouts A4, A6 in EVALS.md) lean on exactly the kind of nuanced judgment Flash may handle less reliably than Pro. If Phase 4's `npm run eval` pass rate on those specific fixtures is weak, escalate the extraction call (only) to Gemini 2.5 Pro while keeping Flash for lighter tasks (PII tagging, drafting) — don't silently lower the confidence thresholds to compensate.
+
+---
+
 ## Hackathon compliance (verified against slackhack.devpost.com, July 5, 2026)
 
 | Requirement (official rules) | Our status |
@@ -59,6 +69,8 @@ Gate: screenshot or a failure report; do not touch Phase 1 without it.
 Build: repo scaffold (Node, Vitest, better-sqlite3, `src/core` vs adapters); `.env.example`; Google SA client (read-only); requirements JSON cloned from a **real funder template** (download it first — PRD §14.1); Ledger Summary block from live Sheet reads.
 Test: sheet-client unit tests (mocked API); F2 integration (revoke SA access → exact §13.8 copy, nothing breaks).
 Gate: ledger screenshot with live numbers + `npm test` green.
+
+**Gate met, July 6, 2026:** live end-to-end test against the real "Youth Literacy Attendance Tracker" Sheet (service account, read-only, Viewer access). Ledger Summary posted in the assistant pane from "Prepare the Bright Futures July report" showed: 8 sessions (W1–W8: 51, 55, 49, 58, 52, 57, 61, 49), Summary tab 432 "students served" vs Roster tab 61 unique students, surfaced side by side without resolution (correct — unit-sanity resolution is Phase 3/GR-1). `npm test` 14/14 green. One implementation fix during this gate: `readAttendanceTrackerSnapshot` initially required numeric-typed cells and silently found zero matches, because this Sheet's cells returned numeric strings (e.g. `"51"`) rather than JS numbers from the Sheets API — the parser now coerces numeric strings via `toNumberOrNull`, which is the more robust behavior regardless of source-cell formatting. No screenshot image was captured (no direct access to the user's screen); this written record with the actual verified values is the exit artifact, consistent with how Phase 0's gate was closed.
 
 ### Phase 2 — The confirmation loop (Jul 7–9, longest phase)
 Build: retrieval (RTS or fallback); extraction call with §9.2 contract; all six §9.3 validators; SQLite schema (§8) with the GR-2 unique index; confirmation cards; confirm/reject/edit handlers with GR-3 mechanics; audit rows.
