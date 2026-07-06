@@ -6,11 +6,19 @@ The manifest at `manifest.json` is valid, complete, and paste-ready for **api.sl
 
 ---
 
-## Platform note: `agent_view` is mandatory for new apps (confirmed, not beta)
+## Platform note: this app uses `assistant_view`, not `agent_view` — confirmed live (update to FR-002)
 
-As of the June 30, 2026 Slack changelog ("Introducing the Agent messaging experience"), **new apps can only use `agent_view`** — the older `assistant_view` (separate History/Chat tabs) is legacy-only and being deprecated; switching an app to `agent_view` is **not reversible**. This manifest correctly uses `features.agent_view` — there is no fallback to `assistant_view` to consider for a brand-new app.
+Original research (June 30, 2026 Slack changelog, "Introducing the Agent messaging experience") found that **new apps can only use `agent_view`** — the older `assistant_view` was expected to be unavailable. In practice, testing against a real Slack app during Phase 0 sandbox setup, **`features.assistant_view` was what Slack's own "Agents" configuration page wrote into this app's manifest** (not `agent_view`) — this manifest has been updated to match reality rather than the pre-testing assumption. Likely explanation: this app predates the June 30 cutover and retained eligibility for the legacy surface; a genuinely brand-new app might still be `agent_view`-only. Treat `assistant_view` as this app's confirmed configuration, not a universal rule.
 
-One behavioral wrinkle this causes: per the same changelog, the `assistant_thread_started` event "no longer indicates when a user has actively opened a DM with your app" under `agent_view` — Slack now recommends `app_home_opened` (with `event.tab === 'messages'`) for that signal instead. However, **the installed `@slack/bolt@4.7.3` package still ships a full `Assistant` class built directly on `assistant_thread_started` / `assistant_thread_context_changed` / `message`** (verified by reading `node_modules/@slack/bolt/dist/Assistant.d.ts` directly, not just docs). Given real ambiguity about which signal actually fires reliably for a new `agent_view` app, `src/slack/assistant.ts` implements **both**: the `Assistant` class (matches PRD §7.3's named events exactly) plus a defensive `app_home_opened` welcome handler. Whichever one Slack actually fires in the real sandbox will produce the Phase 0 exit-criterion reply — this needs confirming against a live workspace, which requires a human with sandbox access (see the checklist below).
+This is actually the simpler outcome: `assistant_view` is exactly what the installed `@slack/bolt@4.7.3` `Assistant` class (`threadStarted` / `threadContextChanged` / `userMessage`, built on `assistant_thread_started` / `assistant_thread_context_changed` / `message`) is designed for — no mismatch to hedge around. `src/slack/assistant.ts` still also registers a defensive `app_home_opened` handler (harmless, and event_subscriptions already includes it), but the `Assistant` class is now confirmed to be the live, correct, primary path — not a hedge against an ambiguous platform state.
+
+---
+
+## Gotcha: `pkce_enabled` cannot be removed once true
+
+This app has PKCE enabled from before it was repurposed for GrantProof. **Any manifest save that omits `oauth_config.pkce_enabled` fails outright** with `"PKCE cannot be disabled once enabled"` — Slack shows this as a small red banner near the top of the JSON editor, easy to miss if you don't scroll up after clicking Save Changes. This was the actual root cause of several manifest saves silently appearing not to take effect during Phase 0 setup (the editor doesn't visibly flag *what* changed on refresh — it just reverts everything, which looks identical to "nothing saved" if you never saw the error). `manifest.json` in this repo keeps `"pkce_enabled": true` for exactly this reason, even though this app never uses the OAuth redirect flow it belongs to.
+
+**Lesson for next time something "won't save":** scroll to the very top of the App Manifest editor and look for a red error banner before assuming the button is broken or the page is cached.
 
 ---
 
@@ -19,10 +27,8 @@ One behavioral wrinkle this causes: per the same changelog, the `assistant_threa
 - ✓ `display_information` with name, description, background_color, long_description
 - ✓ `features.slash_commands` with command, description, usage_hint, should_escape
 - ✓ `features.bot_user` with display_name, always_online
-- ✓ `features.app_home` with `messages_tab_enabled: true` — required so the DM-style agent conversation surface (the whole point of `agent_view`) actually has somewhere to render
-- ✓ `features.agent_view` with agent_description, actions (array), suggested_prompts (array)
-  - Each action: name, description
-  - Each prompt: title, message
+- ✓ `features.app_home` with `messages_tab_enabled: true` — required so the assistant conversation surface has somewhere to render
+- ✓ `features.assistant_view` with assistant_description, suggested_prompts (array) — confirmed live as this app's actual configuration (see platform note above); each prompt: title, message. This field was reachable only through the **Agents** page in the app dashboard, not by pasting JSON into **App Manifest** directly — configure it there if it's ever missing after a manifest re-import.
 - ✓ `oauth_config.scopes.bot` includes all required scopes:
   - `assistant:write` (thread status/title/suggested-prompts methods)
   - `chat:write` (posting messages/cards)

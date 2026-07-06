@@ -28,7 +28,7 @@ Funder requirements → evidence search (Slack + Sheets + Drive)
 
 - **Node 20 + Bolt for JS, Socket Mode** (no public URL/ngrok for dev and demo; Railway or Render for always-on judging)
 - **SQLite via better-sqlite3** (single file, zero ops)
-- **Claude API, model `claude-sonnet-4-6`, strict JSON output** for extraction
+- **LLM: Gemini 3.5 Flash, strict JSON output** for extraction, PII tagging, and drafting — supersedes PRD §7.2's Claude choice per project-owner decision (DR-001, see PLAN.md). PRD.md's text is left unedited (frozen); wherever it says "Claude API" or `claude-sonnet-4-6`, read "the configured Gemini model" instead. The prompt contracts, schemas, and validators (§9.2, §10, §12) are unaffected — only the model client changes.
 - **Google Sheets + Drive read-only via a service account** — share the Sheet and Drive folder with the SA email; no Google OAuth
 - **Entry surface: Slack AI assistant pane first**; DM and the `/grantproof` slash command are fallbacks. A slash-command-only app reads as 2019.
 - Retrieval: **Real-Time Search API primary**; fallback is `conversations.history` over configured channel IDs (reporting-period filter, 200-message cap, keyword prefilter). **Never `search.messages`** — it needs a user token.
@@ -60,7 +60,7 @@ Full DDL in PRD §8. Tables: `grants`, `requirements`, `evidence`, `conflicts`, 
 
 - Acknowledge every command and button within 3 seconds; use `assistant.threads.setStatus` to stream progress while working.
 - Bot scopes: `assistant:write`, `chat:write`, `commands`, `im:history`, `im:write`, `channels:history`, `channels:read`, `users:read` (add `groups:*` only if the demo uses a private channel — default is public channels).
-- Events: `assistant_thread_started`, `assistant_thread_context_changed`, `message.im`, plus `app_home_opened` (added post-PRD — see EVALS.md FR-002: Slack's June 2026 `agent_view` migration means `assistant_thread_started` may not reliably signal "user opened a DM" anymore, so the app listens for both). Interactivity enabled; manifest uses `features.agent_view` (mandatory for new apps as of June 2026 — `assistant_view` is legacy/deprecating).
+- Events: `assistant_thread_started`, `assistant_thread_context_changed`, `message.im`, plus `app_home_opened` as a harmless second signal. Interactivity enabled; manifest uses `features.assistant_view` — confirmed live against the sandbox app (see EVALS.md FR-002 update); Slack's broader June 2026 push toward `agent_view` for brand-new apps didn't apply here, likely because this app predates that cutover.
 - All UX copy is specified verbatim in PRD §13 (welcome, ledger summary, confirmation/conflict/unit-suspicion/redaction cards, gap summary, and every §13.8 error state). Use those exact strings; all error states must exist before submission.
 
 ## Build Order (PRD §16 — sequential, exit artifacts mandatory)
