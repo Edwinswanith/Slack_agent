@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/slack/app.ts",
-    "build": "tsc",
+    "build": "tsc && cp src/db/schema.sql dist/db/schema.sql",
     "start": "node dist/slack/app.js",
     "test": "vitest run test/unit",
     "test:integration": "vitest run test/integration",
