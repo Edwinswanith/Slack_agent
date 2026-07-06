@@ -1139,6 +1139,18 @@ export function registerAssistantHandlers(app: App): void {
     }
     try {
       const db = getDb();
+      const existing = getEvidenceById(db, evidenceId);
+      // A 'conflicted' row (whether still open or already resolved as the
+      // losing side) may only be moved by the conflict card's Use Sheet/Use
+      // Slack buttons — the generic Confirm button here has no way to also
+      // reject the other side, so it must not touch conflicted evidence.
+      if (existing?.status === 'conflicted') {
+        await respond({
+          replace_original: true,
+          text: `This evidence is part of a conflict — use the conflict card above to resolve it.`,
+        });
+        return;
+      }
       confirmEvidence(db, evidenceId, actingUser, new Date().toISOString());
       await respond({
         replace_original: true,
@@ -1160,6 +1172,14 @@ export function registerAssistantHandlers(app: App): void {
     }
     try {
       const db = getDb();
+      const existing = getEvidenceById(db, evidenceId);
+      if (existing?.status === 'conflicted') {
+        await respond({
+          replace_original: true,
+          text: `This evidence is part of a conflict — use the conflict card above to resolve it.`,
+        });
+        return;
+      }
       rejectEvidence(db, evidenceId, actingUser, new Date().toISOString());
       await respond({
         replace_original: true,
