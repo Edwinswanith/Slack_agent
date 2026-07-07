@@ -12,6 +12,10 @@ Funder requirements -> evidence search (Slack + Sheets + Drive)
 
 **Product religion:** no claim beyond what the source supports. Nothing enters a draft unless a human confirmed it. This is an evidence engine with a reporting surface — not a grant writer, discovery tool, CRM, or autonomous submitter.
 
+## Architecture
+
+![GrantProof system architecture](docs/architecture.png)
+
 ## Stack
 
 - Node 20 + [Bolt for JS](https://slack.dev/bolt-js/), Socket Mode (no public URL needed for dev/demo)
