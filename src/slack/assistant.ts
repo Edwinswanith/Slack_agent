@@ -344,7 +344,7 @@ async function runEvidencePipeline(
       if (regexSignal.detected && !item.pii_detected) {
         logger.info('Regex backstop caught PII the LLM extraction missed', {
           requirement_key: item.requirement_key,
-          reasons: regexSignal.reasons,
+          reasons: summarizePiiRiskCategories(regexSignal.reasons),
         });
       }
 
@@ -489,8 +489,8 @@ async function maskAndPostRedactionCard(
     if (!maskedClaim.verifiedSafe || !maskedQuote.verifiedSafe) {
       logger.error('PII masking did not pass the regex backstop; card withheld', {
         evidenceId,
-        claimSignals: maskedClaim.remainingSignals,
-        quoteSignals: maskedQuote.remainingSignals,
+        claimSignals: summarizePiiRiskCategories(maskedClaim.remainingSignals),
+        quoteSignals: summarizePiiRiskCategories(maskedQuote.remainingSignals),
       });
       return;
     }

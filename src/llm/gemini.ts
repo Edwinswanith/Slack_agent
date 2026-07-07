@@ -174,7 +174,8 @@ Return a JSON array of evidence items, wrapped in an object with an "items" fiel
         typeof obj.source_ref !== 'string' ||
         typeof obj.unit_ambiguous !== 'boolean' ||
         typeof obj.pii_detected !== 'boolean' ||
-        (typeof obj.note !== 'string' && obj.note !== null)
+        (typeof obj.note !== 'string' && obj.note !== null) ||
+        (typeof obj.confidence !== 'number' && typeof obj.confidence !== 'string')
       ) {
         throw new ExtractionError(
           `Item at index ${index} has invalid schema: ${JSON.stringify(obj)}`

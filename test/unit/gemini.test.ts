@@ -89,6 +89,25 @@ describe("extractEvidence", () => {
     expect(result[0].note).toBe("flagged for review");
   });
 
+  it("rejects an item with a null confidence field (security sweep finding)", async () => {
+    mockResponseWithItems([
+      {
+        requirement_key: "attendance_by_session",
+        claim_text: "A total of 54 students attended Workshop 8.",
+        quote_text: "Workshop 8 done. 54 students attended",
+        source_ref: "https://example.slack.com/archives/C123/p123",
+        confidence: null,
+        unit_ambiguous: false,
+        pii_detected: false,
+        note: "some note",
+      },
+    ]);
+
+    await expect(
+      extractEvidence([{ sourceRef: "s1", text: "t1" }], ["attendance_by_session"])
+    ).rejects.toThrow(ExtractionError);
+  });
+
   it("returns an empty array when Gemini reports no qualifying items", async () => {
     mockResponseWithItems([]);
 
